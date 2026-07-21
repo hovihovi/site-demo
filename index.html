@@ -381,7 +381,7 @@ input,textarea{font-family:inherit}
 const API_BASE = 'https://menu-qr.thedeusirae.workers.dev/api/v1';
 // Remplacez par votre vraie clé API
 // Obtenez-la depuis /admin/api-keys
-const API_TOKEN = 'VOTRE_CLE_API_ICI';
+const API_TOKEN = '994b0d…ecc9';
 const API_HEADERS = { 'Authorization': `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' };
 
 // ── FALLBACK MENU DATA ──────────────────────
@@ -656,14 +656,73 @@ async function initMenu() {
 }
 
 async function fetchMenu() {
+  const CACHE_KEY = 'mandarin-menu-cache';
+  const CACHE_TTL = 60 * 60 * 1000; // 1 heure
+
+  // 1. Vérifier le cache localStorage
+  const cached = localStorage.getItem(CACHE_KEY);
+  if (cached) {
+    try {
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_TTL && Array.isArray(data) && data.length > 0) {
+        menuItems = data;
+        return;
+      }
+    } catch (e) { /* cache corrompu, on ignore */ }
+  }
+
+  // 2. Appel API
   try {
     const res = await fetch(`${API_BASE}/menu?lang=fr`, { headers: API_HEADERS });
-    if (!res.ok) throw new Error('API error');
+    if (!res.ok) throw new Error('API error ' + res.status);
     const data = await res.json();
-    menuItems = data.menu || data.items || data;
-    if (!Array.isArray(menuItems) || menuItems.length === 0) throw new Error('Empty menu');
+
+    // L'API retourne { menu: { categories: [{ name, items: [...] }] } }
+    const cats = data?.menu?.categories;
+    if (!cats || !Array.isArray(cats) || cats.length === 0) throw new Error('Empty menu from API');
+
+    // Aplatir les catégories en une liste d'items
+    const items = [];
+    cats.forEach(cat => {
+      (cat.items || []).forEach(item => {
+        items.push({
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          price: item.price,
+          image: item.image_url,
+          spicy_level: item.spicy_level || 0,
+          category: cat.name,
+          category_id: cat.id,
+          allergens: item.allergens || []
+        });
+      });
+    });
+
+    if (items.length === 0) throw new Error('No items found');
+
+    menuItems = items;
+
+    // 3. Sauvegarder en cache
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ data: items, timestamp: Date.now() }));
+
   } catch (e) {
-    console.warn('API menu fetch failed, using fallback:', e.message);
+    console.warn('API menu fetch failed:', e.message);
+
+    // 4. Fallback: cache expiré ou API down
+    if (cached) {
+      try {
+        const { data } = JSON.parse(cached);
+        if (Array.isArray(data) && data.length > 0) {
+          console.warn('Using stale cache as fallback');
+          menuItems = data;
+          return;
+        }
+      } catch (e2) { /* ignore */ }
+    }
+
+    // 5. Dernier recours: fallback hardcodé
+    console.warn('No cache available, using hardcoded fallback');
     menuItems = FALLBACK_MENU;
   }
 }
