@@ -126,6 +126,10 @@ input,textarea{font-family:inherit}
 @media(max-width:1024px){.menu-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.menu-grid{grid-template-columns:1fr}}
 .menu-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:12px;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;cursor:pointer}
+.menu-error{grid-column:1/-1;text-align:center;padding:4rem 2rem}
+.menu-error-icon{font-size:4rem;margin-bottom:1rem}
+.menu-error h3{color:#c9a84c;margin-bottom:.75rem;font-size:1.3rem}
+.menu-error p{color:#9a9490;max-width:400px;margin:0 auto}
 .menu-card:hover{transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,.4);border-color:rgba(201,168,76,.2)}
 .menu-card-img{height:180px;position:relative;overflow:hidden}
 .menu-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.4,0,.2,1)}
@@ -381,38 +385,11 @@ input,textarea{font-family:inherit}
 const API_BASE = 'https://menu-qr.thedeusirae.workers.dev/api/v1';
 // Remplacez par votre vraie clé API
 // Obtenez-la depuis /admin/api-keys
-const API_TOKEN = '994b0d…ecc9';
+// Remplacé au déploiement par GitHub Actions
+// Ajoute le secret API_TOKEN dans les settings GitHub
+const API_TOKEN = 'API_TOKEN_PLACEHOLDER';
 const API_HEADERS = { 'Authorization': `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' };
 
-// ── FALLBACK MENU DATA ──────────────────────
-const FALLBACK_MENU = [
-  {id:1,name:"Rouleaux de printemps",price:5.50,category:"Entrées",description:"Rouleaux croustillants aux légumes et vermicelles",spicy_level:0,image:"https://images.unsplash.com/photo-1606525437910-600b0aa16f6a?w=400&q=80"},
-  {id:2,name:"Raviolis vapeur",price:6.80,category:"Entrées",description:"Raviolis farcis au porc et légumes, cuits à la vapeur",spicy_level:0,image:"https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=400&q=80"},
-  {id:3,name:"Nems",price:7.00,category:"Entrées",description:"Nems croustillants au porc, champignons noirs et carottes",spicy_level:1,image:"https://images.unsplash.com/photo-1633321702512-ced3c6a376bb?w=400&q=80"},
-  {id:4,name:"Beignets de crevettes",price:8.50,category:"Entrées",description:"Crevettes entières en beignet tempura léger et croustillant",spicy_level:0,image:"https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400&q=80"},
-  {id:5,name:"Soupe piquante",price:5.00,category:"Soupes",description:"Soupe sichuanaise relevée au tofu, champignons et œuf",spicy_level:3,image:"https://images.unsplash.com/photo-1547592166-23a7f566b35f?w=400&q=80"},
-  {id:6,name:"Soupe wonton",price:6.00,category:"Soupes",description:"Bouillon clair aux raviolis wonton garnis de crevettes",spicy_level:0,image:"https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56?w=400&q=80"},
-  {id:7,name:"Soupe aux algues",price:4.50,category:"Soupes",description:"Bouillon léger aux algues nori, tofu soyeux et ciboulette",spicy_level:0,image:"https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&q=80"},
-  {id:8,name:"Poulet à l'ananas",price:11.90,category:"Plats principaux",description:"Aiguillettes de poulet sautées, ananas caramélisé, sauce aigre-douce maison",spicy_level:0,image:"https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400&q=80"},
-  {id:9,name:"Bœuf aux oignons",price:13.50,category:"Plats principaux",description:"Émincé de bœuf sauté au wok, oignons, poivrons, sauce soja noire",spicy_level:0,image:"https://images.unsplash.com/photo-1553163147-622ab57be1c7?w=400&q=80"},
-  {id:10,name:"Porc caramélisé",price:12.50,category:"Plats principaux",description:"Poitrine de porc mijotée, glaçage caramel au gingembre et cinq-épices",spicy_level:1,image:"https://images.unsplash.com/photo-1574484284002-952d92456975?w=400&q=80"},
-  {id:11,name:"Canard laqué",price:15.50,category:"Plats principaux",description:"Demi-canard laqué, peau croustillante, crêpes mandarines et sauce hoisin",spicy_level:0,image:"https://images.unsplash.com/photo-1598515213692-5f252f75d2f2?w=400&q=80"},
-  {id:12,name:"Crevettes au curry",price:14.90,category:"Plats principaux",description:"Crevettes sautées au curry rouge, lait de coco, légumes croquants",spicy_level:2,image:"https://images.unsplash.com/photo-1625943553852-781c6d443151?w=400&q=80"},
-  {id:13,name:"Poisson vapeur gingembre",price:15.00,category:"Plats principaux",description:"Filet de bar cuit à la vapeur, julienne de gingembre, ciboule, sauce soja",spicy_level:0,image:"https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?w=400&q=80"},
-  {id:14,name:"Nouilles sautées légumes",price:9.90,category:"Nouilles & Riz",description:"Nouilles de blé sautées au wok, légumes de saison, sauce d'huître",spicy_level:0,image:"https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&q=80"},
-  {id:15,name:"Nouilles épicées bœuf",price:11.50,category:"Nouilles & Riz",description:"Nouilles sautées à la pâte de piment, émincé de bœuf, pousses de bambou",spicy_level:3,image:"https://images.unsplash.com/photo-1555126634-323283e090fa?w=400&q=80"},
-  {id:16,name:"Riz cantonais",price:9.50,category:"Nouilles & Riz",description:"Riz sauté, dés de jambon, petits pois, œuf, oignons nouveaux",spicy_level:0,image:"https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400&q=80"},
-  {id:17,name:"Riz à l'ananas",price:11.90,category:"Nouilles & Riz",description:"Riz sauté servi dans un demi-ananas, crevettes, noix de cajou, curry doux",spicy_level:1,image:"https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&q=80"},
-  {id:18,name:"Beignets de banane",price:5.50,category:"Desserts",description:"Bananes enrobées de pâte croustillante, miel et graines de sésame doré",spicy_level:0,image:"https://images.unsplash.com/photo-1505253304499-90d46cf11a0f?w=400&q=80"},
-  {id:19,name:"Litchis au sirop",price:6.00,category:"Desserts",description:"Litchis frais dans un sirop léger parfumé à la rose et au gingembre",spicy_level:0,image:"https://images.unsplash.com/photo-1589302168068-964664d0fdd4?w=400&q=80"},
-  {id:20,name:"Glace au thé vert",price:4.50,category:"Desserts",description:"Glace artisanale au matcha, éclats de chocolat blanc, coulis de fruits rouges",spicy_level:0,image:"https://images.unsplash.com/photo-1570197788417-0e82375c90b9?w=400&q=80"},
-  {id:21,name:"Thé au jasmin",price:3.00,category:"Boissons",description:"Thé vert au jasmin parfumé, servi chaud ou glacé",spicy_level:0,image:"https://images.unsplash.com/photo-1556881286-fc6915169721?w=400&q=80"},
-  {id:22,name:"Limonade maison",price:4.00,category:"Boissons",description:"Limonade artisanale au citron vert, menthe fraîche et gingembre",spicy_level:0,image:"https://images.unsplash.com/photo-1621263764928-df1444c5e859?w=400&q=80"},
-  {id:23,name:"Bubble tea",price:5.50,category:"Boissons",description:"Thé au lait perles de tapioca, choix de parfums : matcha, taro, mangue",spicy_level:0,image:"https://images.unsplash.com/photo-1558857563-b371033873b8?w=400&q=80"},
-  {id:24,name:"Bière chinoise",price:5.00,category:"Boissons",description:"Tsingtao, bière blonde chinoise fraîche et désaltérante",spicy_level:0,image:"https://images.unsplash.com/photo-1535958636474-b021ee887b13?w=400&q=80"}
-];
-
-// ── STATE ────────────────────────────────────
 let menuItems = [];
 let cart = [];
 let currentCategory = null;
@@ -721,10 +698,20 @@ async function fetchMenu() {
       } catch (e2) { /* ignore */ }
     }
 
-    // 5. Dernier recours: fallback hardcodé
-    console.warn('No cache available, using hardcoded fallback');
-    menuItems = FALLBACK_MENU;
+    // 5. Dernier recours: message d'erreur
+    showMenuError(); return;
   }
+}
+
+function showMenuError(message) {
+  document.getElementById('cat-tabs').innerHTML = '';
+  document.getElementById('menu-grid').innerHTML = '
+    <div class="menu-error">\n\n      <div class="menu-error-icon">🥡</div>\n
+      <h3>' + (message || 'Oups, le menu est temporairement indisponible.') + '</h3>\n
+      <p>Nos plats sont en pleine préparation numérique. Revenez dans quelques instants ou contactez-nous directement.</p>\n
+      <a href="#contact" class="btn-secondary" style="margin-top:1rem;display:inline-block">Nous contacter</a>\n
+    </div>\n
+  ';
 }
 
 function getCategories() {
