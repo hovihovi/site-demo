@@ -705,13 +705,14 @@ async function fetchMenu() {
 
 function showMenuError(message) {
   document.getElementById('cat-tabs').innerHTML = '';
-  document.getElementById('menu-grid').innerHTML = '
-    <div class="menu-error">\n\n      <div class="menu-error-icon">🥡</div>\n
-      <h3>' + (message || 'Oups, le menu est temporairement indisponible.') + '</h3>\n
-      <p>Nos plats sont en pleine préparation numérique. Revenez dans quelques instants ou contactez-nous directement.</p>\n
-      <a href="#contact" class="btn-secondary" style="margin-top:1rem;display:inline-block">Nous contacter</a>\n
-    </div>\n
-  ';
+  document.getElementById('menu-grid').innerHTML = `
+    <div class="menu-error">
+      <div class="menu-error-icon">🥡</div>
+      <h3>${message || 'Oups, le menu est temporairement indisponible.'}</h3>
+      <p>Nos plats sont en pleine préparation numérique. Revenez dans quelques instants ou contactez-nous directement.</p>
+      <a href="#contact" class="btn-secondary" style="margin-top:1rem;display:inline-block">Nous contacter</a>
+    </div>
+  `;
 }
 
 function getCategories() {
